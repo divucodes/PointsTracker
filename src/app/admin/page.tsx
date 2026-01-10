@@ -9,7 +9,9 @@ import {
     deleteTask,
     resetCompetition,
     getParticipants,
-    adminCompleteTask
+    adminCompleteTask,
+    seedTasks,
+    deleteAllTasks
 } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,6 +127,9 @@ export default function AdminPage() {
                     <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Control Panel</h1>
                 </div>
                 <div className="flex gap-2">
+                    <Button variant="secondary" onClick={async () => { await seedTasks(); loadData(); toast.success('Default tasks added'); }} className="rounded-full">
+                        Seed Default Tasks
+                    </Button>
                     <Button variant="destructive" onClick={handleReset} className="rounded-full shadow-lg">
                         <RefreshCcw className="w-4 h-4 mr-2" />
                         Full Reset
@@ -212,6 +217,25 @@ export default function AdminPage() {
                                 <Input name="points" type="number" placeholder="Pts" className="w-24" />
                                 <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold px-8">Add Task</Button>
                             </form>
+
+                            <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-dashed border-slate-300">
+                                <span className="text-xs font-bold text-slate-500 uppercase">Danger Zone</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:bg-red-50 text-xs font-bold"
+                                    onClick={async () => {
+                                        if (confirm('Delete ALL tasks? This will also clear all existing participant scores linked to these tasks.')) {
+                                            await deleteAllTasks();
+                                            loadData();
+                                            toast.success('All tasks deleted');
+                                        }
+                                    }}
+                                >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Clear All Tasks
+                                </Button>
+                            </div>
 
                             <Table>
                                 <TableHeader className="bg-slate-50">

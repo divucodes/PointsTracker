@@ -23,6 +23,36 @@ export async function updateStartDate(date: Date) {
 }
 
 // --- Tasks ---
+const DEFAULT_TASKS = [
+    { title: "5+ Acc attached to one device", points: 3 },
+    { title: "60% ^ One upgrade (Claim Weekly)", points: 5 },
+    { title: "Receive positive Google review", points: 5 },
+    { title: "Shokz", points: 3 },
+    { title: "JBL 120", points: 3 },
+    { title: "JBL 320", points: 4 },
+    { title: "First positive morning message in group chat", points: 3 },
+    { title: "Full set of companions", points: 5 },
+    { title: "Headphones (Air pods, Galaxy Buds ETC)", points: 2 },
+    { title: "New account with BB and OA", points: 3 },
+    { title: "Run morning heartbeat - update board/comms and start heartbeat by 8:45am", points: 3 },
+    { title: "100% E-SIM attachment rate (Claim Weekly)", points: 5 },
+    { title: "Smart Watches", points: 3 },
+    { title: "New Business Fibre/Wireless", points: 5 },
+    { title: "Sharing win in middle earth", points: 5 },
+    { title: "Karaoke Bundle (Speaker, Partylight, Twin pack microphone)", points: 5 },
+    { title: "Surprise Challenge", points: 20 },
+    { title: "Trend Micro", points: 3 },
+];
+
+export async function seedTasks() {
+    const existing = await db.select().from(tasks).limit(1);
+    if (existing.length === 0) {
+        await db.insert(tasks).values(DEFAULT_TASKS);
+        revalidatePath('/admin');
+        revalidatePath('/');
+    }
+}
+
 export async function getTasks() {
     return await db.select().from(tasks);
 }
@@ -110,6 +140,13 @@ export async function getLeaderboard() {
         .orderBy(sql`3 DESC`); // Order by the 3rd column (totalPoints)
 
     return results;
+}
+
+export async function deleteAllTasks() {
+    await db.delete(completions); // Delete completions first to maintain integrity
+    await db.delete(tasks);
+    revalidatePath('/admin');
+    revalidatePath('/');
 }
 
 // --- Competition Management ---
