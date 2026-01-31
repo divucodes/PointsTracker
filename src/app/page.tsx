@@ -74,12 +74,10 @@ export default function ParticipantPage() {
       const res = await completeTask(user.id, taskId);
       if (res.success) {
         setCompletions([...completions, taskId]);
-        toast.success('Score updated!');
-      } else {
-        toast.error(res.message);
+        toast.success('Points claimed!');
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || 'Failed to claim points');
     }
   }
 
@@ -119,9 +117,12 @@ export default function ParticipantPage() {
   }
 
   const isLocked = settings && new Date().getTime() > new Date(settings.startDate).getTime() + 7 * 24 * 60 * 60 * 1000;
-  const totalPoints = tasks
-    .filter(t => completions.includes(t.id))
-    .reduce((acc, t) => acc + t.points, 0);
+
+  // Calculate total points by counting all completions
+  const totalPoints = completions.reduce((acc, taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    return acc + (task?.points || 0);
+  }, 0);
 
   return (
     <main className="min-h-screen bg-slate-100 p-4 md:p-8">
@@ -162,35 +163,34 @@ export default function ParticipantPage() {
           <div className="space-y-4">
             <h3 className="text-xl font-black text-slate-900 px-1 uppercase tracking-tighter italic">Live Challenges</h3>
             {tasks.map((task) => {
-              const isDone = completions.includes(task.id);
+              const claimCount = completions.filter(id => id === task.id).length;
               return (
-                <Card key={task.id} className={`border-none shadow-md transition-all ${isDone ? 'bg-slate-50' : 'bg-white hover:scale-[1.02]'}`}>
+                <Card key={task.id} className={`border-none shadow-md transition-all ${claimCount > 0 ? 'bg-slate-50' : 'bg-white hover:scale-[1.02]'}`}>
                   <CardContent className="p-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl ${isDone ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
-                        {isDone ? <Check className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
+                      <div className={`p-3 rounded-xl ${claimCount > 0 ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {claimCount > 0 ? <Check className="w-6 h-6" /> : <Trophy className="w-6 h-6" />}
                       </div>
                       <div>
                         <h4 className="font-black text-slate-900 text-lg uppercase tracking-tight">{task.title}</h4>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-black text-blue-600">{task.points} PTS</span>
+                          {claimCount > 0 && (
+                            <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                              ×{claimCount}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {isDone ? (
-                      <div className="font-black text-green-600 uppercase tracking-widest text-sm bg-green-50 px-4 py-2 rounded-xl border border-green-100">
-                        GRANTED
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={() => handleComplete(task.id)}
-                        disabled={isLocked}
-                        className="bg-black hover:bg-blue-600 text-white font-black px-6 py-5 rounded-xl transition-all uppercase tracking-tight"
-                      >
-                        Claim Points
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => handleComplete(task.id)}
+                      disabled={isLocked}
+                      className="bg-black hover:bg-blue-600 text-white font-black px-6 py-5 rounded-xl transition-all uppercase tracking-tight"
+                    >
+                      Claim Points
+                    </Button>
                   </CardContent>
                 </Card>
               );

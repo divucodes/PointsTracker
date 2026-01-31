@@ -98,12 +98,7 @@ export async function completeTask(userId: string, taskId: string) {
         throw new Error('Competition has ended. Scores are locked.');
     }
 
-    try {
-        await db.insert(completions).values({ userId, taskId });
-    } catch (e) {
-        // Already completed
-        return { success: false, message: 'Task already completed' };
-    }
+    await db.insert(completions).values({ userId, taskId });
 
     revalidatePath('/');
     revalidatePath('/admin');
@@ -111,14 +106,10 @@ export async function completeTask(userId: string, taskId: string) {
 }
 
 export async function adminCompleteTask(userId: string, taskId: string) {
-    try {
-        await db.insert(completions).values({ userId, taskId });
-        revalidatePath('/');
-        revalidatePath('/admin');
-        return { success: true };
-    } catch (e) {
-        return { success: false, message: 'Already assigned' };
-    }
+    await db.insert(completions).values({ userId, taskId });
+    revalidatePath('/');
+    revalidatePath('/admin');
+    return { success: true };
 }
 
 export async function getUserCompletions(userId: string) {

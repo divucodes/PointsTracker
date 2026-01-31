@@ -80,8 +80,6 @@ export default function AdminPage() {
         if (res.success) {
             toast.success('Points granted successfully');
             loadData();
-        } else {
-            toast.error(res.message);
         }
     };
 
